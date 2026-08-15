@@ -32,7 +32,7 @@ matchesRouter.get('/', async (req, res) => {
 matchesRouter.post('/', async (req, res) => {
     const parsed = createMatchSchema.safeParse(req.body);
     if (!parsed.success) {
-        return res.status(400).json({ errors: parsed.errors });
+        return res.status(400).json({ errors: parsed.error.issues });
     }
 
     const { startTime, endTime, homeScore, awayScore } = parsed.data;
@@ -47,11 +47,12 @@ matchesRouter.post('/', async (req, res) => {
             status: getMatchStatus(startTime, endTime),
         }).returning();
 
-        if(req.app.locals.broadcastMatchCreate){
-            res.app.locals.broadcastMatchCreate(event);
-
-        res.status(201).json({ message: 'Match created', match: event });
+        if (req.app.locals.broadcastMatchCreate) {
+            req.app.locals.broadcastMatchCreate(event);
         }
+
+        return res.status(201).json({ message: 'Match created', match: event });
+
 
     } catch (error) {
         return res.status(500).json({ error: 'Internal server error', details: error.message });
