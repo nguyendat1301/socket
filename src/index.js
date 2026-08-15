@@ -1,12 +1,12 @@
 import express from 'express';
 import http from 'http';
 import { matchesRouter } from './routes/matches.js';
-import {attachWebSocketServer} from './ws/server.js';
-
+import { attachWebSocketServer } from './ws/server.js';
+import { commentoryRouter } from './routes/commentory.js';
 
 const app = express();
 const PORT = Number(process.env.PORT);
-const HOST = process.env.HOST ;
+const HOST = process.env.HOST;
 
 const server = http.createServer(app);
 
@@ -19,9 +19,11 @@ app.get('/', (req, res) => {
 });
 
 app.use('/matches', matchesRouter); // Use the matches router for /matches endpoint 
+app.use('/matches/:id/commentory', commentoryRouter);
 
-const {broadcastMatchCreate} = attachWebSocketServer(server);
+const { broadcastMatchCreate, broadcastCommentary } = attachWebSocketServer(server);
 app.locals.broadcastMatchCreate = broadcastMatchCreate; // Store the broadcast function in app locals for later use
+app.locals.broadcastCommentary = broadcastCommentary;
 
 // Start the server and log the URL
 server.listen(PORT, HOST, () => {
